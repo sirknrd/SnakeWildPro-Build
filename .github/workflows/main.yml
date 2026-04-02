@@ -28,7 +28,9 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Usamos la ruta completa para evitar errores de comando no encontrado
+          # Si el archivo está en la raíz, borra la línea 'cd'
+          # cd nombre_de_tu_carpeta 
+          /home/runner/.local/bin/buildozer init  # Solo por seguridad
           yes | /home/runner/.local/bin/buildozer -v android debug
         
       - name: Upload APK
