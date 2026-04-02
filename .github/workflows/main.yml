@@ -1,0 +1,32 @@
+name: Build Snake Wild Pro APK
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip autoconf cmake libtool pkg-config \
+          libncurses5-dev libncursesw5-dev zlib1g-dev libffi-dev libssl-dev \
+          build-essential python3-dev python3-pip python3-setuptools \
+          libsqlite3-dev sqlite3 bzip2 libbz2-dev liblzma-dev libgdbm-dev \
+          libnss3-dev libreadline-dev libffi-dev wget curl openjdk-17-jdk
+
+      - name: Install Buildozer
+        run: |
+          pip3 install --user --upgrade buildozer Cython==0.29.33
+
+      - name: Build with Buildozer
+        run: |
+          # El comando 'yes' acepta las licencias de Android automáticamente
+          yes | buildozer -v android debug
+        
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: SnakeWildPro-Package
+          path: bin/*.apk
