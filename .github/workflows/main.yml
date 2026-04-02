@@ -1,9 +1,6 @@
 name: Build Snake Wild Pro APK
 on: [push, pull_request]
 
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true 
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -32,7 +29,7 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Solo ejecutamos la compilación directa, sin intentar limpiar carpetas inexistentes
+          # Ejecución directa sin limpiezas previas
           yes | buildozer -v android debug
         
       - name: Upload APK
