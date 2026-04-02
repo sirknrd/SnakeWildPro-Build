@@ -1,12 +1,16 @@
 name: Build Snake Wild Pro APK
 on: [push, pull_request]
 
+env:
+  # Esto silencia los avisos de Node.js que te aparecen
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true 
+
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # ACTUALIZADO
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,13 +32,13 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Si el archivo está en la raíz, borra la línea 'cd'
-          # cd nombre_de_tu_carpeta 
-          /home/runner/.local/bin/buildozer init  # Solo por seguridad
-          yes | /home/runner/.local/bin/buildozer -v android debug
+          # Forzamos la ruta del ejecutable
+          export PATH=$PATH:/home/runner/.local/bin
+          # Ejecutamos la compilación
+          yes | buildozer -v android debug
         
       - name: Upload APK
-        uses: actions/upload-artifact@v4  # LA CORRECCIÓN CLAVE
+        uses: actions/upload-artifact@v4
         with:
           name: SnakeWildPro-Package
           path: bin/*.apk
