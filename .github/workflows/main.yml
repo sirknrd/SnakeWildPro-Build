@@ -2,7 +2,6 @@ name: Build Snake Wild Pro APK
 on: [push, pull_request]
 
 env:
-  # Esto silencia los avisos de Node.js que te aparecen
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true 
 
 jobs:
@@ -28,14 +27,12 @@ jobs:
 
       - name: Install Buildozer and Cython
         run: |
-          pip3 install --user --upgrade buildozer Cython==0.29.33
+          pip3 install --user --upgrade "buildozer" "Cython<3.0"
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Limpiamos cualquier intento fallido anterior dentro del servidor
-          buildozer android clean
-          # Compilamos de nuevo
+          # Solo ejecutamos la compilación directa, sin intentar limpiar carpetas inexistentes
           yes | buildozer -v android debug
         
       - name: Upload APK
