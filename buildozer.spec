@@ -23,7 +23,7 @@ version = 0.1
 requirements = python3,kivy
 
 # (str) Supported orientation
-orientation = sensor
+orientation = portrait
 
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
