@@ -32,9 +32,10 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Forzamos la ruta del ejecutable
           export PATH=$PATH:/home/runner/.local/bin
-          # Ejecutamos la compilación
+          # Limpiamos cualquier intento fallido anterior dentro del servidor
+          buildozer android clean
+          # Compilamos de nuevo
           yes | buildozer -v android debug
         
       - name: Upload APK
