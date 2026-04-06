@@ -19,7 +19,8 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # (list) Application requirements
-requirements = python3,kivy==2.3.0
+# NOTA: Usamos pygame y sqlite3 porque tu código es Pygame puro.
+requirements = python3,pygame,sqlite3,android
 
 # (str) Supported orientation
 orientation = portrait
@@ -27,13 +28,16 @@ orientation = portrait
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
 
-# (int) Target Android API (Actualizado para 2026)
+# (int) Target Android API (Actualizado a nivel 34 para 2026)
 android.api = 34
 
 # (int) Minimum API your APK will support.
 android.minapi = 21
 
-# (str) Las arquitecturas necesarias para celulares modernos (64 bits) y antiguos (32 bits)
+# (str) El "traductor" para Pygame (DEBE SER sdl2)
+p4a.bootstrap = sdl2
+
+# (str) Las arquitecturas necesarias para que no se cierre (64 y 32 bits)
 android.archs = arm64-v8a, armeabi-v7a
 
 # (bool) allow backup support
