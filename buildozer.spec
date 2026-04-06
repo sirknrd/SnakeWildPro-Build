@@ -1,55 +1,30 @@
 [app]
-
-# (str) Title of your application
 title = Snake Wild Pro
-
-# (str) Package name
 package.name = snakewildpro
-
-# (str) Package domain (needed for android/ios packaging)
 package.domain = org.conrad
-
-# (str) Source code where the main.py live
 source.dir = .
-
-# (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
+version = 0.4
 
-# (str) Application versioning (Subimos a 0.3 para limpiar rastros previos)
-version = 0.3
-
-# (list) Application requirements
-# CRÍTICO: Agregamos cython para que Pygame pueda compilar sus componentes de C
+# REQUERIMIENTOS CRÍTICOS: Cython es el traductor, android es para permisos
 requirements = python3==3.10.12,pygame==2.5.2,cython,sqlite3,android
 
-# (str) Supported orientation
 orientation = portrait
-
-# (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
 
-# (int) Target Android API (Nivel 34 para compatibilidad 2026)
+# Ajustes para celulares modernos (2026)
 android.api = 34
-
-# (int) Minimum API your APK will support.
 android.minapi = 21
-
-# (str) El motor para Pygame (DEBE SER sdl2)
-p4a.bootstrap = sdl2
-
-# (str) Arquitecturas para celulares modernos (64 bits) y antiguos (32 bits)
 android.archs = arm64-v8a, armeabi-v7a
+android.copy_libs = 1
 
-# (bool) allow backup support
-android.allow_backup = True
+# PERMISOS: Sin esto, la app se cierra al intentar crear la DB
+android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE, INTERNET
 
-# (str) python-for-android branch to use
+# MOTOR DE JUEGO
+p4a.bootstrap = sdl2
 p4a.branch = master
 
 [buildozer]
-
-# (int) Log level (0 = error only, 1 = info, 2 = debug)
 log_level = 2
-
-# (int) Display warning if buildozer is run as root (0 = False, 1 = True)
 warn_on_root = 1
