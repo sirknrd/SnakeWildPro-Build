@@ -15,12 +15,12 @@ source.dir = .
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
 
-# (str) Application versioning
-version = 0.1
+# (str) Application versioning (Subimos a 0.3 para limpiar rastros previos)
+version = 0.3
 
 # (list) Application requirements
-# NOTA: Usamos pygame y sqlite3 porque tu código es Pygame puro.
-requirements = python3==3.10.12,pygame==2.5.2,sqlite3,android
+# CRÍTICO: Agregamos cython para que Pygame pueda compilar sus componentes de C
+requirements = python3==3.10.12,pygame==2.5.2,cython,sqlite3,android
 
 # (str) Supported orientation
 orientation = portrait
@@ -28,16 +28,16 @@ orientation = portrait
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
 
-# (int) Target Android API (Actualizado a nivel 34 para 2026)
+# (int) Target Android API (Nivel 34 para compatibilidad 2026)
 android.api = 34
 
 # (int) Minimum API your APK will support.
 android.minapi = 21
 
-# (str) El "traductor" para Pygame (DEBE SER sdl2)
+# (str) El motor para Pygame (DEBE SER sdl2)
 p4a.bootstrap = sdl2
 
-# (str) Las arquitecturas necesarias para que no se cierre (64 y 32 bits)
+# (str) Arquitecturas para celulares modernos (64 bits) y antiguos (32 bits)
 android.archs = arm64-v8a, armeabi-v7a
 
 # (bool) allow backup support
