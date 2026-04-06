@@ -20,7 +20,7 @@ version = 0.1
 
 # (list) Application requirements
 # NOTA: Usamos pygame y sqlite3 porque tu código es Pygame puro.
-requirements = python3,pygame,sqlite3,android
+requirements = python3==3.10.12,pygame==2.5.2,sqlite3,android
 
 # (str) Supported orientation
 orientation = portrait
