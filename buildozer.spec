@@ -20,7 +20,11 @@ version = 0.3
 
 # (list) Application requirements
 # CRÍTICO: Agregamos cython para que Pygame pueda compilar sus componentes de C
-requirements = python3==3.10.12,pygame==2.5.2,cython,sqlite3,android
+requirements = streamlit==1.32.0
+pandas>=2.2.0
+numpy<2.0.0
+sqlite3-binary
+python-dotenv
 
 # (str) Supported orientation
 orientation = portrait
