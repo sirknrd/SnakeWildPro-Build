@@ -19,8 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # (list) Application requirements
-# Solo lo esencial para que no de errores de compilación
-requirements = python3,kivy
+requirements = python3,kivy==2.3.0
 
 # (str) Supported orientation
 orientation = portrait
@@ -28,14 +27,17 @@ orientation = portrait
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
 
-# (int) Target Android API, should be as high as possible.
-android.api = 31
+# (int) Target Android API (Actualizado para 2026)
+android.api = 34
 
 # (int) Minimum API your APK will support.
 android.minapi = 21
 
-# (str) The Android arch to build for
-android.archs = armeabi-v7a
+# (str) Las arquitecturas necesarias para celulares modernos (64 bits) y antiguos (32 bits)
+android.archs = arm64-v8a, armeabi-v7a
+
+# (bool) allow backup support
+android.allow_backup = True
 
 # (str) python-for-android branch to use
 p4a.branch = master
