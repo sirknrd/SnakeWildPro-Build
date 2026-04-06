@@ -1,25 +1,36 @@
 import pygame
 import random
 import sqlite3
-import sys
 import os
 
-# --- CONFIGURACIÓN E INTERFAZ ---
+# --- COMPATIBILIDAD ANDROID (CRÍTICO) ---
+def get_db_path():
+    # En Android, escribimos en la carpeta de datos privados de la app
+    try:
+        from android.storage import app_storage_path
+        base_path = app_storage_path()
+    except ImportError:
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, "data_snake_v2.db")
+
+# --- CONFIGURACIÓN ---
 pygame.init()
-ANCHO, ALTO = 800, 600
-BLOQUE = 20
+# Para móviles, es mejor detectar la resolución real o usar una fija escalable
+ANCHO, ALTO = 800, 600 
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
-pygame.display.set_caption("Snake Pro: Wild Edition Mobile")
 reloj = pygame.time.Clock()
 
-# Colores y Estética
+# Colores
 FONDO_MENU = (20, 25, 30)
 ACENTO = (0, 255, 150)
 BLANCO = (240, 240, 240)
-fuente_t = pygame.font.SysFont("Arial", 60, bold=True)
-fuente_m = pygame.font.SysFont("Arial", 24, bold=True)
 
-# --- DEFINICIÓN DE SKINS ---
+# Fuentes (Usamos SysFont para evitar errores si no encuentra el archivo .ttf)
+fuente_t = pygame.font.SysFont("sans-serif", 60, bold=True)
+fuente_m = pygame.font.SysFont("sans-serif", 24, bold=True)
+
+# --- SKINS ---
 SKINS = {
     "Pitón Real": {"cabeza": (107, 142, 35), "cuerpo": (85, 107, 47), "patron": (139, 69, 19), "fondo": (25, 30, 25), "precio": 0},
     "Coral": {"cabeza": (20, 20, 20), "cuerpo": (220, 20, 20), "patron": (255, 230, 0), "fondo": (35, 20, 20), "precio": 200},
@@ -27,34 +38,17 @@ SKINS = {
     "Albina": {"cabeza": (255, 240, 230), "cuerpo": (255, 218, 185), "patron": (255, 255, 255), "fondo": (40, 35, 30), "precio": 1000}
 }
 
-# --- SISTEMA DE PARTÍCULAS ---
-class Particula:
-    def __init__(self, x, y, color):
-        self.x, self.y = x, y
-        self.vx, self.vy = random.uniform(-3, 3), random.uniform(-3, 3)
-        self.vida = 255
-        self.color = color
+BLOQUE = 20
 
-    def actualizar(self):
-        self.x += self.vx
-        self.y += self.vy
-        self.vida -= 15
-        self.vy += 0.1
-
-    def dibujar(self, superficie):
-        if self.vida > 0:
-            s = pygame.Surface((4, 4))
-            s.set_alpha(self.vida)
-            s.fill(self.color)
-            superficie.blit(s, (int(self.x), int(self.y)))
-
-# --- RUTA DE BASE DE DATOS (Compatible con Android) ---
-def get_db_path():
-    # En Android, necesitamos escribir en una carpeta con permisos
-    if 'PYTHONPATH' in os.environ: # Detecta si es Android
-        from android.storage import app_storage_path
-        return os.path.join(app_storage_path(), "data_snake.db")
-    return "data_snake.db"
+# --- DB MANAGER ---
+def db_query(query, params=(), fetch=True, commit=True):
+    path = get_db_path()
+    conn = sqlite3.connect(path)
+    cursor = conn.execute(query, params)
+    res = cursor.fetchone() if fetch else None
+    if commit: conn.commit()
+    conn.close()
+    return res
 
 def init_db():
     path = get_db_path()
@@ -67,132 +61,58 @@ def init_db():
     conn.commit()
     conn.close()
 
-def db_query(query, params=(), fetch=True):
-    path = get_db_path()
-    conn = sqlite3.connect(path)
-    cursor = conn.execute(query, params)
-    res = cursor.fetchone() if fetch else None
-    conn.commit()
-    conn.close()
-    return res
+# --- CLASES ---
+class Particula:
+    def __init__(self, x, y, color):
+        self.x, self.y = x, y
+        self.vx, self.vy = random.uniform(-3, 3), random.uniform(-3, 3)
+        self.vida = 255
+        self.color = color
+    def actualizar(self):
+        self.x += self.vx; self.y += self.vy; self.vida -= 15
+    def dibujar(self, superficie):
+        if self.vida > 0:
+            s = pygame.Surface((4, 4))
+            s.set_alpha(self.vida); s.fill(self.color)
+            superficie.blit(s, (int(self.x), int(self.y)))
 
-# --- COMPONENTES ---
-def boton(texto, y, color_base=(45, 50, 65)):
-    rect = pygame.Rect(ANCHO//2 - 150, y, 300, 50)
-    cursor = pygame.mouse.get_pos()
-    color = (70, 75, 90) if rect.collidepoint(cursor) else color_base
-    pygame.draw.rect(pantalla, color, rect, border_radius=15)
-    pygame.draw.rect(pantalla, ACENTO, rect, 2, border_radius=15)
-    txt = fuente_m.render(texto, True, BLANCO)
-    pantalla.blit(txt, (rect.centerx - txt.get_width()//2, rect.centery - txt.get_height()//2))
-    return rect
-
+# --- MOTOR DE JUEGO ---
 def dibujar_serpiente(cuerpo, skin_name):
     s = SKINS[skin_name]
     for i, p in enumerate(cuerpo):
-        es_cabeza = (i == len(cuerpo) - 1)
         rect = pygame.Rect(p[0], p[1], BLOQUE - 1, BLOQUE - 1)
-        if es_cabeza:
-            pygame.draw.rect(pantalla, s["cabeza"], rect, border_radius=10)
-            pygame.draw.circle(pantalla, (255, 255, 255), (p[0]+6, p[1]+6), 3)
-            pygame.draw.circle(pantalla, (255, 255, 255), (p[0]+14, p[1]+6), 3)
-        else:
-            color = s["patron"] if i % 3 == 0 else s["cuerpo"]
-            pygame.draw.rect(pantalla, color, rect, border_radius=5)
-
-# --- ESTADOS ---
-def ver_records():
-    while True:
-        pantalla.fill(FONDO_MENU)
-        pantalla.blit(fuente_t.render("TOP SCORES", True, ACENTO), (ANCHO//2-170, 50))
-        conn = sqlite3.connect(get_db_path())
-        mejores = conn.execute("SELECT puntos, fecha FROM records ORDER BY puntos DESC LIMIT 5").fetchall()
-        conn.close()
-        y = 180
-        for i, r in enumerate(mejores):
-            txt = f"#{i+1} - {r[0]} PTS ({r[1][:10]})"
-            pantalla.blit(fuente_m.render(txt, True, BLANCO), (250, y))
-            y += 50
-        btn_v = boton("VOLVER", 480, (40, 40, 40))
-        pygame.display.flip()
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT: return "SALIR"
-            if e.type == pygame.MOUSEBUTTONDOWN and btn_v.collidepoint(e.pos): return "MENU"
-
-def tienda():
-    while True:
-        res_u = db_query("SELECT monedas, skin_activa FROM usuario WHERE id=1")
-        monedas, activa = res_u
-        conn = sqlite3.connect(get_db_path())
-        compradas = [f[0] for f in conn.execute("SELECT skin_nombre FROM inventario WHERE usuario_id=1").fetchall()]
-        conn.close()
-        pantalla.fill(FONDO_MENU)
-        pantalla.blit(fuente_t.render("WILD STORE", True, ACENTO), (ANCHO//2-180, 40))
-        y, btns = 140, {}
-        for nombre, info in SKINS.items():
-            if nombre == activa: txt, col = "[ EQUIPADA ]", (0, 150, 100)
-            elif nombre in compradas: txt, col = f"USAR {nombre}", (45, 65, 90)
-            else: txt, col = f"{nombre} (${info['precio']})", (60, 45, 45)
-            btns[nombre] = boton(txt, y, color_base=col)
-            y += 65
-        btn_v = boton("VOLVER", 480, (80, 40, 40))
-        pygame.display.flip()
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT: return "SALIR"
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if btn_v.collidepoint(e.pos): return "MENU"
-                for n, b in btns.items():
-                    if b.collidepoint(e.pos):
-                        if n in compradas: db_query("UPDATE usuario SET skin_activa=? WHERE id=1", (n,), False)
-                        elif monedas >= SKINS[n]["precio"]:
-                            db_query("UPDATE usuario SET monedas=monedas-?, skin_activa=? WHERE id=1", (SKINS[n]["precio"], n), False)
-                            db_query("INSERT INTO inventario VALUES (1, ?)", (n,), False)
+        color = s["cabeza"] if i == len(cuerpo)-1 else (s["patron"] if i % 3 == 0 else s["cuerpo"])
+        pygame.draw.rect(pantalla, color, rect, border_radius=5)
 
 def juego():
     res = db_query("SELECT monedas, skin_activa FROM usuario WHERE id=1")
-    monedas, skin_name = res
+    monedas_init, skin_name = res
     skin = SKINS[skin_name]
     x, y, dx, dy = ANCHO//2, ALTO//2, BLOQUE, 0
     cuerpo, largo, puntos = [[x, y]], 4, 0
     cx = round(random.randrange(20, ANCHO-20)/BLOQUE)*BLOQUE
     cy = round(random.randrange(80, ALTO-20)/BLOQUE)*BLOQUE
-    particulas, bloqueo_dir = [], False
+    particulas = []
 
     while True:
         pantalla.fill(skin["fondo"])
-        
-        # --- CONTROL HÍBRIDO (TECLADO + TOUCH) ---
         for e in pygame.event.get():
             if e.type == pygame.QUIT: return "SALIR"
-            
-            # Control por teclado
-            if e.type == pygame.KEYDOWN and not bloqueo_dir:
-                if e.key == pygame.K_UP and dy == 0: dx, dy, bloqueo_dir = 0, -BLOQUE, True
-                elif e.key == pygame.K_DOWN and dy == 0: dx, dy, bloqueo_dir = 0, BLOQUE, True
-                elif e.key == pygame.K_LEFT and dx == 0: dx, dy, bloqueo_dir = -BLOQUE, 0, True
-                elif e.key == pygame.K_RIGHT and dx == 0: dx, dy, bloqueo_dir = BLOQUE, 0, True
-            
-            # Control por toque (Touch)
-            if e.type == pygame.MOUSEBUTTONDOWN and not bloqueo_dir:
+            if e.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = e.pos
-                # Dividimos la pantalla en zonas para girar
-                if my < ALTO // 4: # Arriba
-                    if dy == 0: dx, dy, bloqueo_dir = 0, -BLOQUE, True
-                elif my > (ALTO // 4) * 3: # Abajo
-                    if dy == 0: dx, dy, bloqueo_dir = 0, BLOQUE, True
-                elif mx < ANCHO // 2: # Izquierda
-                    if dx == 0: dx, dy, bloqueo_dir = -BLOQUE, 0, True
-                else: # Derecha
-                    if dx == 0: dx, dy, bloqueo_dir = BLOQUE, 0, True
+                if my < ALTO//3 and dy == 0: dx, dy = 0, -BLOQUE
+                elif my > (ALTO//3)*2 and dy == 0: dx, dy = 0, BLOQUE
+                elif mx < ANCHO//2 and dx == 0: dx, dy = -BLOQUE, 0
+                elif mx >= ANCHO//2 and dx == 0: dx, dy = BLOQUE, 0
 
-        x, y = x + dx, y + dy
+        x += dx; y += dy
         if x<0 or x>=ANCHO or y<0 or y>=ALTO or [x,y] in cuerpo[:-1]: break
         cuerpo.append([x,y])
         if len(cuerpo) > largo: del cuerpo[0]
 
         if x == cx and y == cy:
             puntos += 10; largo += 1
-            for _ in range(15): particulas.append(Particula(cx+10, cy+10, (50, 255, 50)))
+            for _ in range(10): particulas.append(Particula(cx, cy, ACENTO))
             cx = round(random.randrange(20, ANCHO-20)/BLOQUE)*BLOQUE
             cy = round(random.randrange(80, ALTO-20)/BLOQUE)*BLOQUE
 
@@ -202,38 +122,37 @@ def juego():
             if p.vida <= 0: particulas.remove(p)
 
         dibujar_serpiente(cuerpo, skin_name)
-        pantalla.blit(fuente_m.render(f"PUNTOS: {puntos}", True, BLANCO), (20, 20))
         pygame.display.flip()
-        reloj.tick(12 + (puntos // 50))
-        bloqueo_dir = False
+        reloj.tick(12)
 
-    if puntos > 0: db_query("INSERT INTO records (puntos) VALUES (?)", (puntos,), False)
     db_query("UPDATE usuario SET monedas = monedas + ? WHERE id=1", (puntos,), False)
+    db_query("INSERT INTO records (puntos) VALUES (?)", (puntos,), False)
     return "MENU"
 
 def menu():
     while True:
-        res = db_query("SELECT monedas, skin_activa FROM usuario WHERE id=1")
-        monedas = res[0]
+        res = db_query("SELECT monedas FROM usuario WHERE id=1")
         pantalla.fill(FONDO_MENU)
-        pantalla.blit(fuente_t.render("SNAKE WILD", True, ACENTO), (ANCHO//2-180, 80))
-        pantalla.blit(fuente_m.render(f"MONEDAS: {monedas}", True, (200, 200, 200)), (ANCHO//2-80, 180))
-        b_j, b_t, b_r, b_s = boton("JUGAR", 250), boton("TIENDA", 320), boton("RECORDS", 390), boton("SALIR", 460)
+        txt = fuente_t.render("SNAKE WILD", True, ACENTO)
+        pantalla.blit(txt, (ANCHO//2 - txt.get_width()//2, 100))
+        
+        # Botón simplificado para touch
+        rect_jugar = pygame.Rect(ANCHO//2-100, 300, 200, 60)
+        pygame.draw.rect(pantalla, ACENTO, rect_jugar, border_radius=10)
+        btn_txt = fuente_m.render("TAP TO PLAY", True, FONDO_MENU)
+        pantalla.blit(btn_txt, (rect_jugar.centerx-btn_txt.get_width()//2, rect_jugar.centery-10))
+        
         pygame.display.flip()
         for e in pygame.event.get():
             if e.type == pygame.QUIT: return "SALIR"
             if e.type == pygame.MOUSEBUTTONDOWN:
-                if b_j.collidepoint(e.pos): return "JUEGO"
-                if b_t.collidepoint(e.pos): return "TIENDA"
-                if b_r.collidepoint(e.pos): return "RECORDS"
-                if b_s.collidepoint(e.pos): return "SALIR"
+                if rect_jugar.collidepoint(e.pos): return "JUEGO"
 
-# --- BUCLE PRINCIPAL ---
-init_db()
-estado = "MENU"
-while estado != "SALIR":
-    if estado == "MENU": estado = menu()
-    elif estado == "TIENDA": estado = tienda()
-    elif estado == "JUEGO": estado = juego()
-    elif estado == "RECORDS": estado = ver_records()
-pygame.quit()
+# --- EJECUCIÓN ---
+if __name__ == "__main__":
+    init_db()
+    estado = "MENU"
+    while estado != "SALIR":
+        if estado == "MENU": estado = menu()
+        elif estado == "JUEGO": estado = juego()
+    pygame.quit()
