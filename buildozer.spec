@@ -6,22 +6,23 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.4
 
-# REQUERIMIENTOS CRÍTICOS: Cython es el traductor, android es para permisos
-requirements = python3==3.10.12,pygame==2.5.2,cython,sqlite3,android
+# Recomendado para p4a/SDL2:
+# - sqlite3 ya viene con Python
+# - no declares "android" como requirement
+requirements = python3==3.10.12,pygame==2.5.2,cython
 
 orientation = portrait
 fullscreen = 1
 
-# Ajustes para celulares modernos (2026)
 android.api = 34
 android.minapi = 21
 android.archs = arm64-v8a, armeabi-v7a
 android.copy_libs = 1
 
-# PERMISOS: Sin esto, la app se cierra al intentar crear la DB
-android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE, INTERNET
+# En Android 14, WRITE/READ_EXTERNAL_STORAGE no aplica como antes.
+# Tu DB va en app_storage_path() (privado), así que no requiere permisos.
+android.permissions = INTERNET
 
-# MOTOR DE JUEGO
 p4a.bootstrap = sdl2
 p4a.branch = master
 
