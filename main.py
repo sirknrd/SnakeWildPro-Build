@@ -62,27 +62,10 @@ def pedir_permisos():
         pass
 
 
-# =========================
-# INIT PYGAME (ANDROID SAFE)
-# =========================
-pygame.init()
-pedir_permisos()
-
-# En Android (SDL2) es más seguro crear ventana con (0,0) y luego leer tamaño real
-pantalla = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-ANCHO, ALTO = pantalla.get_size()
-
-BLOQUE = 40
-reloj = pygame.time.Clock()
-
 # Estética
 FONDO_MENU = (20, 25, 30)
 ACENTO = (0, 255, 150)
 BLANCO = (240, 240, 240)
-
-# Fuentes más compatibles en Android
-fuente_t = pygame.font.SysFont(None, 60, bold=True)
-fuente_m = pygame.font.SysFont(None, 30, bold=True)
 
 # --- SKINS ---
 SKINS = {
@@ -277,6 +260,23 @@ def menu():
 # MAIN LOOP
 # =========================
 if __name__ == "__main__":
+    install_crash_logger()
+    pygame.init()
+    pedir_permisos()
+
+    # En Android (SDL2) es más seguro obtener info de pantalla antes de crear ventana
+    info = pygame.display.Info()
+    ANCHO = info.current_w if info.current_w > 0 else 480
+    ALTO = info.current_h if info.current_h > 0 else 800
+    pantalla = pygame.display.set_mode((ANCHO, ALTO), pygame.FULLSCREEN)
+
+    BLOQUE = 40
+    reloj = pygame.time.Clock()
+
+    # Fuentes más compatibles en Android
+    fuente_t = pygame.font.SysFont(None, 60, bold=True)
+    fuente_m = pygame.font.SysFont(None, 30, bold=True)
+
     try:
         init_db()
         estado = "MENU"
