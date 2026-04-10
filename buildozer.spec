@@ -8,8 +8,8 @@ version = 0.4
 
 # Recomendado para p4a/SDL2:
 # - sqlite3 ya viene con Python
-# - no declares "android" como requirement
-requirements = python3==3.10.12,pygame==2.5.2,cython
+# - android es necesario para android.storage y android.permissions
+requirements = python3,pygame,android
 
 orientation = portrait
 fullscreen = 1

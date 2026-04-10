@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Buildozer and Cython
         run: |
-          pip3 install --user --upgrade "buildozer" "Cython<3.0"
+          pip3 install --user --upgrade "buildozer" "Cython==0.29.36"
 
       - name: Build with Buildozer
         run: |
