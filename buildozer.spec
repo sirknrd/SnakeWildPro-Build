@@ -9,7 +9,7 @@ version = 0.4
 # Recomendado para p4a/SDL2:
 # - sqlite3 ya viene con Python
 # - no declares "android" como requirement
-requirements = python3==3.10.12,pygame==2.5.2,cython
+requirements = python3,pygame==2.6.1,cython
 
 orientation = portrait
 fullscreen = 1
@@ -24,7 +24,7 @@ android.copy_libs = 1
 android.permissions = INTERNET
 
 p4a.bootstrap = sdl2
-p4a.branch = master
+p4a.branch = stable
 
 [buildozer]
 log_level = 2
