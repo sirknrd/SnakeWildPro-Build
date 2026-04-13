@@ -24,7 +24,7 @@ android.copy_libs = 1
 android.permissions = INTERNET
 
 p4a.bootstrap = sdl2
-p4a.branch = stable
+p4a.branch = develop
 
 [buildozer]
 log_level = 2
